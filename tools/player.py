@@ -14,7 +14,7 @@ class Player(QtGui.QMainWindow):
     """A simple Media Player using VLC and Qt
     """
 
-    database_path = '/srv/http/library.db'
+    database_path = '/srv/http/partyplayer/library.db'
 
     def __init__(self, master=None):
         QtGui.QMainWindow.__init__(self, master)
@@ -23,10 +23,18 @@ class Player(QtGui.QMainWindow):
         # creating a basic vlc instance
         self.instance = vlc.Instance()
         # creating an empty vlc media player
-        self.mediaplayer = self.instance.media_player_new()
+	
+	self.mediaplayer = self.instance.media_player_new()
 
+	self.songqueue = self.instance.media_list_new()
+        self.medialistplayer = self.instance.media_list_player_new()
+	self.medialistplayer.set_media_player(self.mediaplayer)	
+	self.medialistplayer.set_media_list(self.songqueue)
+	
         self.createUI()
         self.isPaused = False
+
+	self.songChosen = False
 
         self.vlc_events = self.mediaplayer.event_manager()
         self.vlc_events.event_attach(vlc.EventType.MediaPlayerEndReached, self.SongFinished)
@@ -76,7 +84,7 @@ class Player(QtGui.QMainWindow):
         self.nextbutton = QtGui.QPushButton("Next")
         self.hbuttonbox.addWidget(self.nextbutton)
         self.connect(self.nextbutton, QtCore.SIGNAL("clicked()"),
-                     self.nextSong)
+                     self.chooseNextSong)
 
         self.hbuttonbox.addStretch(1)
         self.volumeslider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
@@ -114,14 +122,14 @@ class Player(QtGui.QMainWindow):
         """Toggle play/pause status
         """
         if self.mediaplayer.is_playing():
-            self.mediaplayer.pause()
+            self.medialistplayer.pause()
             self.playbutton.setText("Play")
             self.isPaused = True
         else:
-            if self.mediaplayer.play() == -1:
+            if self.medialistplayer.play() == -1:
                 self.OpenFile()
                 return
-            self.mediaplayer.play()
+            self.medialistplayer.play()
             self.playbutton.setText("Pause")
             self.timer.start()
             self.isPaused = False
@@ -132,8 +140,9 @@ class Player(QtGui.QMainWindow):
         self.mediaplayer.stop()
         self.playbutton.setText("Play")
 
-    def nextSong(self):
+    def chooseNextSong(self):
             song = next(self.songFetcher)
+	    print song
             self.OpenFile(song)
 
     def nextSongGenerator(self):
@@ -161,15 +170,12 @@ class Player(QtGui.QMainWindow):
         
         # put the media in the media player
 
-        print(self.mediaplayer)
-        self.mediaplayer.add_media(self.media)
+        self.songqueue.add_media(self.media)
 
         # parse the metadata of the file
         self.media.parse()
         # set the title of the track as window title
         self.setWindowTitle(self.media.get_meta(0))
-
-        
 
         # the media player has to be 'connected' to the QFrame
         # (otherwise a video would be displayed in it's own window)
@@ -182,7 +188,6 @@ class Player(QtGui.QMainWindow):
             self.mediaplayer.set_hwnd(self.videoframe.winId())
         elif sys.platform == "darwin": # for MacOS
             self.mediaplayer.set_nsobject(self.videoframe.winId())
-        self.PlayPause()
 
     def setVolume(self, Volume):
         """Set the volume
@@ -204,6 +209,10 @@ class Player(QtGui.QMainWindow):
         # setting the slider to the desired position
         self.positionslider.setValue(self.mediaplayer.get_position() * 1000)
 
+	if(self.mediaplayer.get_position() > 0.95 and not self.songChosen):
+		self.chooseNextSong()
+		self.songChosen = True
+
         if not self.mediaplayer.is_playing():
             # no need to call this function if nothing is played
             self.timer.stop()
@@ -215,7 +224,7 @@ class Player(QtGui.QMainWindow):
                 
     @vlc.callbackmethod
     def SongFinished(self, data):
-        self.nextSong()
+	self.songChosen = False
 
 
 if __name__ == "__main__":
@@ -223,6 +232,7 @@ if __name__ == "__main__":
     player = Player()
     player.show()
     player.resize(640, 480)
-    player.nextSong()
+    player.chooseNextSong()
+    player.PlayPause()
     sys.exit(app.exec_())
 
