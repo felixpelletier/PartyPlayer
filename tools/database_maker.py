@@ -5,7 +5,7 @@ import sqlite3 as sql
 import mutagen
 import collections
 
-dir = '/home/felix/test'
+dir = '/home/felix/Music'
 #database_path = '../library.db'
 
 database_path = '/srv/http/partyplayer/library.db'

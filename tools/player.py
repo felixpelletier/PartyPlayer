@@ -15,6 +15,7 @@ class Player(QtGui.QMainWindow):
     """
 
     database_path = '/srv/http/partyplayer/library.db'
+    choose_song_delay = 5000
 
     def __init__(self, master=None):
         QtGui.QMainWindow.__init__(self, master)
@@ -176,6 +177,7 @@ class Player(QtGui.QMainWindow):
         self.media.parse()
         # set the title of the track as window title
         self.setWindowTitle(self.media.get_meta(0))
+	self.songThreshold = (self.media.get_duration() - self.choose_song_delay) / float(self.media.get_duration())
 
         # the media player has to be 'connected' to the QFrame
         # (otherwise a video would be displayed in it's own window)
@@ -209,7 +211,7 @@ class Player(QtGui.QMainWindow):
         # setting the slider to the desired position
         self.positionslider.setValue(self.mediaplayer.get_position() * 1000)
 
-	if(self.mediaplayer.get_position() > 0.95 and not self.songChosen):
+	if(self.mediaplayer.get_position() > self.songThreshold and not self.songChosen):
 		self.chooseNextSong()
 		self.songChosen = True
 

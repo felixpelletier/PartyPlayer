@@ -1,3 +1,11 @@
+
+<head>
+	<meta content='width=device-width, initial-scale=1' name='viewport'/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body bgcolor="#EBEBEB">
+
 <?php
 try
 {
@@ -46,3 +54,8 @@ while ($song = $reponse->fetch())
 $reponse->closeCursor();
 
 include("menu.php");
+
+
+?>
+
+</body>
