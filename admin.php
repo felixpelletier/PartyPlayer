@@ -28,7 +28,7 @@ foreach($raw_settings as $setting)
 
 
 
-<form action="cible.php" method="post">
+<form action="updatesettings.php" method="post">
 <p>
 Music library location:</br>
     <input type="text" name="location" value="<?php echo $settings['location'] ?>"/>
