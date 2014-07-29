@@ -1,4 +1,14 @@
+<head>
+	<meta content='width=device-width, initial-scale=1' name='viewport'/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body bgcolor="#EBEBEB">
+
 <?php
+
+header( "refresh:1; url=admin.php" );
+
 try
 {
 	$db = new PDO('sqlite:settings.db');
@@ -15,10 +25,8 @@ $req->execute(array(
 	'value' => $_POST['location'],
 	));
 
-print_r($db->errorInfo());
-
 $req->closeCursor();
 
-echo $_POST['location'];
-
 ?>
+
+Setting saved
